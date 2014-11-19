@@ -31,6 +31,7 @@ use JMS\Serializer\Tests\Fixtures\Person;
 use JMS\Serializer\Tests\Fixtures\ObjectWithVirtualXmlProperties;
 use JMS\Serializer\Tests\Fixtures\ObjectWithXmlKeyValuePairs;
 use JMS\Serializer\Tests\Fixtures\ObjectWithXmlNamespaces;
+use JMS\Serializer\Tests\Fixtures\ObjectWithXmlRootNamespace;
 use JMS\Serializer\Tests\Fixtures\Input;
 use JMS\Serializer\Tests\Fixtures\SimpleClassObject;
 use JMS\Serializer\Tests\Fixtures\SimpleSubClassObject;
@@ -44,6 +45,22 @@ class XmlSerializationTest extends BaseSerializationTest
     {
         $obj = new InvalidUsageOfXmlValue();
         $this->serialize($obj);
+    }
+
+
+    /**
+     * @dataProvider getXMLBooleans
+     */
+    public function testXMLBooleans($xmlBoolean, $boolean)
+    {
+        if ($this->hasDeserializer()) {
+            $this->assertSame($boolean, $this->deserialize('<result>'.$xmlBoolean.'</result>', 'boolean'));
+        }
+    }
+
+    public function getXMLBooleans()
+    {
+        return array(array('true', true), array('false', false), array('1', true), array('0', false));
     }
 
     public function testPropertyIsObjectWithAttributeAndValue()
@@ -206,6 +223,12 @@ class XmlSerializationTest extends BaseSerializationTest
         $this->assertAttributeSame('en', 'language', $deserialized);
         $this->assertAttributeEquals('Foo Bar', 'author', $deserialized);
 
+    }
+
+    public function testObjectWithXmlRootNamespace()
+    {
+        $object = new ObjectWithXmlRootNamespace('This is a nice title.', 'Foo Bar', new \DateTime('2011-07-30 00:00', new \DateTimeZone('UTC')), 'en');
+        $this->assertEquals($this->getContent('object_with_xml_root_namespace'), $this->serialize($object));
     }
 
     public function testXmlNamespacesInheritance()
